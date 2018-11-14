@@ -1568,12 +1568,16 @@ void Client::Damage(Mob* other, int32 damage, uint16 spell_id, EQEmu::skills::Sk
 	//should this be applied to all damage? comments sound like some is for spell DMG
 	//patch notes on PVP reductions only mention archery/throwing ... not normal dmg
 	if (other && other->IsClient() && (other != this) && damage > 0) {
-		int PvPMitigation = 100;
-		if (attack_skill == EQEmu::skills::SkillArchery || attack_skill == EQEmu::skills::SkillThrowing)
-			PvPMitigation = 80;
-		else
-			PvPMitigation = 67;
-		damage = std::max((damage * PvPMitigation) / 100, 1);
+		int PvPMitigation = RuleI(World, PVPMeleeMitigation);
+		if (attack_skill == EQEmu::skills::SkillAbjuration ||  //spells
+			attack_skill == EQEmu::skills::SkillAlteration ||
+			attack_skill == EQEmu::skills::SkillConjuration ||
+			attack_skill == EQEmu::skills::SkillDivination ||
+			attack_skill == EQEmu::skills::SkillEvocation) PvPMitigation = RuleI(World, PVPSpellMitigation);
+		if (attack_skill == EQEmu::skills::SkillArchery ||  //ranged
+			attack_skill == EQEmu::skills::SkillThrowing) PvPMitigation = RuleI(World, PVPRangedMitigation);
+		damage = (damage * PvPMitigation) / 100;
+
 	}
 
 	if (!ClientFinishedLoading())
